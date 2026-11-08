@@ -1,0 +1,21 @@
+name: cardapio_semana
+description: "Cardápio da Semana - app de cardápio semanal com controle de despensa."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  sqflite:
+  speech_to_text:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

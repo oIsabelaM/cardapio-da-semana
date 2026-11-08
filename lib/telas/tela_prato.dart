@@ -1,0 +1,162 @@
+import 'package:flutter/material.dart';
+
+import '../control/control_prato.dart';
+import '../model/ingrediente.dart';
+import '../model/prato.dart';
+import '../widgets/widget_button.dart';
+import '../widgets/widget_input.dart';
+import '../widgets/widget_text_custom.dart';
+
+// RF04 - cadastrar prato com ingredientes
+class TelaPrato extends StatefulWidget {
+  @override
+  State<TelaPrato> createState() => _TelaPratoState();
+}
+
+class _TelaPratoState extends State<TelaPrato> {
+  final _nomePrato = TextEditingController();
+  final _ingrediente = TextEditingController();
+  final _quantidade = TextEditingController();
+
+  List<Widget> _itens = [];
+  String _mensagem = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _consultar();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Pratos"),
+      ),
+      body: _body(),
+    );
+  }
+
+  _body() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        InputTextos("Nome do prato", "Ex.: arroz com feijão", controller: _nomePrato),
+        Row(
+          children: [
+            Expanded(child: Buttons("Cadastrar prato", onPressed: _cadastrar)),
+            SizedBox(width: 12),
+            Expanded(child: Buttons("Excluir prato", onPressed: _excluir)),
+          ],
+        ),
+        Divider(),
+        TextosCustom("Ingredientes do prato", 20, Colors.black87),
+        TextosCustom("O ingrediente precisa estar cadastrado na despensa.", 14, Colors.grey),
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: InputTextos("Ingrediente", "Ex.: arroz", controller: _ingrediente),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              flex: 1,
+              child: InputTextos("Quantidade", "Ex.: 0,5", controller: _quantidade),
+            ),
+          ],
+        ),
+        Buttons("Adicionar ingrediente", onPressed: _adicionarIngrediente),
+        TextosCustom(_mensagem, 16, Colors.black87),
+        Divider(),
+        TextosCustom("Pratos cadastrados", 20, Colors.black87),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _itens,
+        ),
+      ],
+    );
+  }
+
+  _cadastrar() async {
+    String nome = Ingrediente.limpar(_nomePrato.text);
+    if (nome == "") {
+      setState(() {
+        _mensagem = "Informe o nome do prato.";
+      });
+      return;
+    }
+    var control = new ControlPrato();
+    int id = await control.insertDatabase(Prato(nome: nome));
+    _mensagem = id > 0
+        ? "Prato \"$nome\" cadastrado! Agora adicione os ingredientes."
+        : "O prato \"$nome\" já existe.";
+    _consultar();
+  }
+
+  _adicionarIngrediente() async {
+    String prato = Ingrediente.limpar(_nomePrato.text);
+    String ingrediente = Ingrediente.limpar(_ingrediente.text);
+    double quantidade = Ingrediente.lerNumero(_quantidade.text);
+    if (prato == "" || ingrediente == "" || quantidade <= 0) {
+      setState(() {
+        _mensagem = "Preencha prato, ingrediente e quantidade.";
+      });
+      return;
+    }
+    var control = new ControlPrato();
+    int resultado = await control.insertIngrediente(prato, ingrediente, quantidade);
+    if (resultado == -1) {
+      _mensagem = "Cadastre o prato \"$prato\" primeiro.";
+    } else if (resultado == -2) {
+      _mensagem = "\"$ingrediente\" não está na despensa. Cadastre-o primeiro.";
+    } else {
+      _mensagem = "\"$ingrediente\" adicionado em \"$prato\".";
+      _ingrediente.text = "";
+      _quantidade.text = "";
+    }
+    _consultar();
+  }
+
+  _excluir() async {
+    String nome = Ingrediente.limpar(_nomePrato.text);
+    if (nome == "") {
+      setState(() {
+        _mensagem = "Informe o nome do prato.";
+      });
+      return;
+    }
+    var control = new ControlPrato();
+    int excluidos = await control.deleteDatabase(nome);
+    _mensagem = excluidos > 0 ? "Prato \"$nome\" excluído!" : "Prato \"$nome\" não encontrado.";
+    _consultar();
+  }
+
+  _consultar() async {
+    var control = new ControlPrato();
+    List<Map<String, dynamic>> list = await control.queryFind("");
+    _itens = [];
+    String pratoAtual = "";
+    int index = 0;
+    list.forEach((element) {
+      if (list[index]['prato'] != pratoAtual) {
+        pratoAtual = list[index]['prato'];
+        _itens.add(SizedBox(height: 8));
+        _itens.add(TextosCustom(pratoAtual, 18, Colors.teal));
+      }
+      if (list[index]['ingrediente'] != null) {
+        _itens.add(TextosCustom(
+            "   • " + list[index]['ingrediente'] + ": " +
+                Ingrediente.formatar(list[index]['quantidade']) + " " +
+                list[index]['unidade'],
+            16, Colors.black87));
+      } else {
+        _itens.add(TextosCustom("   (sem ingredientes)", 16, Colors.grey));
+      }
+      index++;
+    });
+    if (list.length == 0) {
+      _itens.add(TextosCustom("Nenhum prato cadastrado.", 16, Colors.grey));
+    }
+    setState(() {});
+  }
+}
