@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../control/control_cardapio.dart';
 import '../control/control_ingrediente.dart';
 import '../model/ingrediente.dart';
+import '../widgets/cores.dart';
 import '../widgets/widget_button.dart';
+import '../widgets/widget_cartao.dart';
 import '../widgets/widget_text_custom.dart';
 
 // RF08 - lista de compras / RF07 - itens abaixo do minimo
@@ -37,25 +39,33 @@ class _TelaComprasState extends State<TelaCompras> {
       padding: const EdgeInsets.all(16),
       children: [
         Buttons("Atualizar lista", onPressed: _gerar),
-        TextosCustom("Para o cardápio da semana", 20, Colors.black87),
-        TextosCustom("Conta só os pratos ainda não preparados.", 14, Colors.grey),
-        Row(
-          children: [
-            Expanded(flex: 3, child: TextosCustom("Ingrediente", 16, Colors.black)),
-            Expanded(flex: 2, child: TextosCustom("Comprar", 16, Colors.black)),
-          ],
+        SizedBox(height: 16),
+        TextosCustom("Para o cardápio da semana", 18, Cores.texto, negrito: true),
+        TextosCustom("Conta só os pratos ainda não preparados.", 13, Cores.textoSuave),
+        SizedBox(height: 10),
+        Cartao(
+          Row(
+            children: [
+              Expanded(flex: 3, child: TextosCustom("Ingrediente", 14, Cores.texto, negrito: true)),
+              Expanded(flex: 2, child: TextosCustom("Comprar", 14, Cores.texto, negrito: true)),
+            ],
+          ),
+          cor: Cores.cabecalho,
         ),
-        Divider(),
         Column(children: _compras),
-        Divider(),
-        TextosCustom("Abaixo do mínimo na despensa", 20, Colors.black87),
-        Row(
-          children: [
-            Expanded(flex: 3, child: TextosCustom("Ingrediente", 16, Colors.black)),
-            Expanded(flex: 2, child: TextosCustom("Tem / mínimo", 16, Colors.black)),
-          ],
+        SizedBox(height: 16),
+        TextosCustom("Abaixo do estoque mínimo", 18, Cores.texto, negrito: true),
+        TextosCustom("Ingredientes com menos do que você quer ter em casa. Vale repor mesmo sem estar no cardápio.", 13, Cores.textoSuave),
+        SizedBox(height: 10),
+        Cartao(
+          Row(
+            children: [
+              Expanded(flex: 3, child: TextosCustom("Ingrediente", 14, Cores.texto, negrito: true)),
+              Expanded(flex: 2, child: TextosCustom("Tem / mínimo", 14, Cores.texto, negrito: true)),
+            ],
+          ),
+          cor: Cores.cabecalho,
         ),
-        Divider(),
         Column(children: _baixos),
       ],
     );
@@ -67,20 +77,23 @@ class _TelaComprasState extends State<TelaCompras> {
     _compras = [];
     int index = 0;
     list.forEach((element) {
-      _compras.add(Row(
+      _compras.add(Cartao(Row(
         children: [
-          Expanded(flex: 3, child: TextosCustom(list[index]['nome'], 16, Colors.black87)),
+          Expanded(
+              flex: 3,
+              child: TextosCustom(list[index]['nome'], 16, Cores.texto, negrito: true)),
           Expanded(
               flex: 2,
               child: TextosCustom(
                   Ingrediente.formatar(list[index]['comprar']) + " " + list[index]['unidade'],
-                  16, Colors.black87)),
+                  16, Cores.primaria, negrito: true)),
         ],
-      ));
+      )));
       index++;
     });
     if (list.length == 0) {
-      _compras.add(TextosCustom("Nada a comprar para o cardápio.", 16, Colors.grey));
+      _compras.add(TextosCustom("Nada a comprar para o cardápio. ✓", 15, Cores.secundaria,
+          centralizado: true));
     }
 
     var controlIngrediente = new ControlIngrediente();
@@ -88,22 +101,29 @@ class _TelaComprasState extends State<TelaCompras> {
     _baixos = [];
     index = 0;
     baixos.forEach((element) {
-      _baixos.add(Row(
-        children: [
-          Expanded(flex: 3, child: TextosCustom(baixos[index]['nome'], 16, Colors.red)),
-          Expanded(
-              flex: 2,
-              child: TextosCustom(
-                  Ingrediente.formatar(baixos[index]['quantidade']) + " / " +
-                      Ingrediente.formatar(baixos[index]['minimo']) + " " +
-                      baixos[index]['unidade'],
-                  16, Colors.red)),
-        ],
+      _baixos.add(Cartao(
+        Row(
+          children: [
+            Expanded(
+                flex: 3,
+                child: TextosCustom("⚠ " + baixos[index]['nome'], 16, Cores.alerta,
+                    negrito: true)),
+            Expanded(
+                flex: 2,
+                child: TextosCustom(
+                    Ingrediente.formatar(baixos[index]['quantidade']) + " / " +
+                        Ingrediente.formatar(baixos[index]['minimo']) + " " +
+                        baixos[index]['unidade'],
+                    16, Cores.alerta)),
+          ],
+        ),
+        cor: Cores.fundoAlerta,
       ));
       index++;
     });
     if (baixos.length == 0) {
-      _baixos.add(TextosCustom("Nenhum item abaixo do mínimo.", 16, Colors.grey));
+      _baixos.add(TextosCustom("Nenhum item abaixo do mínimo. ✓", 15, Cores.secundaria,
+          centralizado: true));
     }
     setState(() {});
   }

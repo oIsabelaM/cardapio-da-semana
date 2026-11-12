@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../control/control_cardapio.dart';
 import '../model/cardapio.dart';
 import '../model/ingrediente.dart';
+import '../widgets/cores.dart';
 import '../widgets/widget_button.dart';
+import '../widgets/widget_cartao.dart';
 import '../widgets/widget_input.dart';
 import '../widgets/widget_text_custom.dart';
 
@@ -41,34 +43,50 @@ class _TelaCardapioState extends State<TelaCardapio> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Row(
+        Cartao(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              flex: 1,
-              child: InputTextos("Dia", "Ex.: segunda", controller: _dia),
+            TextosCustom("Montar a semana", 18, Cores.texto, negrito: true),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: InputTextos("Dia", "Ex.: segunda", controller: _dia),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  flex: 1,
+                  child: InputTextos("Refeição", "almoço ou jantar", controller: _refeicao),
+                ),
+              ],
             ),
-            SizedBox(width: 12),
-            Expanded(
-              flex: 1,
-              child: InputTextos("Refeição", "almoço ou jantar", controller: _refeicao),
-            ),
+            SizedBox(height: 10),
+            InputTextos("Prato", "Ex.: arroz com feijão", controller: _prato),
+            SizedBox(height: 14),
+            Buttons("Salvar no cardápio", onPressed: _salvar),
+            SizedBox(height: 10),
+            Buttons("Marcar como preparado", onPressed: _preparar),
           ],
+        )),
+        TextosCustom(_mensagem, 16, Cores.secundaria, negrito: true, centralizado: true),
+        SizedBox(height: 12),
+        TextosCustom("Semana", 18, Cores.texto, negrito: true),
+        TextosCustom("Em verde com ✓: já preparado. Toque em um dia para preenchê-lo.", 13,
+            Cores.textoSuave),
+        SizedBox(height: 10),
+        Cartao(
+          Row(
+            children: [
+              Expanded(flex: 2, child: TextosCustom("Dia", 14, Cores.texto, negrito: true)),
+              Expanded(flex: 3, child: TextosCustom("Almoço", 14, Cores.texto, negrito: true)),
+              Expanded(flex: 3, child: TextosCustom("Jantar", 14, Cores.texto, negrito: true)),
+            ],
+          ),
+          cor: Cores.cabecalho,
         ),
-        InputTextos("Prato", "Ex.: arroz com feijão", controller: _prato),
-        Buttons("Salvar no cardápio", onPressed: _salvar),
-        Buttons("Marcar como preparado", onPressed: _preparar),
-        TextosCustom(_mensagem, 16, Colors.black87),
-        Divider(),
-        Row(
-          children: [
-            Expanded(flex: 2, child: TextosCustom("Dia", 16, Colors.black)),
-            Expanded(flex: 3, child: TextosCustom("Almoço", 16, Colors.black)),
-            Expanded(flex: 3, child: TextosCustom("Jantar", 16, Colors.black)),
-          ],
-        ),
-        Divider(),
         Column(children: _linhas),
-        TextosCustom("✓ = já preparado", 14, Colors.grey),
+        SizedBox(height: 8),
         Buttons("Limpar semana", onPressed: _limpar),
       ],
     );
@@ -129,16 +147,21 @@ class _TelaCardapioState extends State<TelaCardapio> {
     // cada dia guarda o texto do almoco e do jantar
     Map<String, String> almoco = {};
     Map<String, String> jantar = {};
+    Map<String, bool> almocoFeito = {};
+    Map<String, bool> jantarFeito = {};
     int index = 0;
     list.forEach((element) {
       String texto = list[index]['prato'];
-      if (list[index]['preparado'] == 1) {
+      bool feito = list[index]['preparado'] == 1;
+      if (feito) {
         texto = texto + " ✓";
       }
       if (list[index]['refeicao'] == "almoco") {
         almoco[list[index]['dia_semana']] = texto;
+        almocoFeito[list[index]['dia_semana']] = feito;
       } else {
         jantar[list[index]['dia_semana']] = texto;
+        jantarFeito[list[index]['dia_semana']] = feito;
       }
       index++;
     });
@@ -146,15 +169,28 @@ class _TelaCardapioState extends State<TelaCardapio> {
     _linhas = [];
     int i = 0;
     Cardapio.dias.forEach((dia) {
-      _linhas.add(Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(flex: 2, child: TextosCustom(Cardapio.diasTela[i], 16, Colors.teal)),
-          Expanded(flex: 3, child: TextosCustom(almoco[dia] ?? "-", 16, Colors.black87)),
-          Expanded(flex: 3, child: TextosCustom(jantar[dia] ?? "-", 16, Colors.black87)),
-        ],
+      String nomeDia = Cardapio.diasTela[i];
+      _linhas.add(InkWell(
+        onTap: () {
+          _dia.text = dia;
+        },
+        child: Cartao(Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+                flex: 2,
+                child: TextosCustom(nomeDia, 15, Cores.primaria, negrito: true)),
+            Expanded(
+                flex: 3,
+                child: TextosCustom(almoco[dia] ?? "-", 15,
+                    (almocoFeito[dia] ?? false) ? Cores.secundaria : Cores.texto)),
+            Expanded(
+                flex: 3,
+                child: TextosCustom(jantar[dia] ?? "-", 15,
+                    (jantarFeito[dia] ?? false) ? Cores.secundaria : Cores.texto)),
+          ],
+        )),
       ));
-      _linhas.add(SizedBox(height: 8));
       i++;
     });
     setState(() {});

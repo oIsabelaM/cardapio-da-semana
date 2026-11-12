@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../control/control_ingrediente.dart';
 import '../model/ingrediente.dart';
+import '../widgets/cores.dart';
 import '../widgets/widget_button.dart';
+import '../widgets/widget_cartao.dart';
 import '../widgets/widget_input.dart';
 import '../widgets/widget_text_custom.dart';
 
@@ -42,43 +44,70 @@ class _TelaDespensaState extends State<TelaDespensa> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        InputTextos("Buscar ingrediente", "Deixe vazio para ver todos", controller: _busca),
-        Buttons("Consultar", onPressed: _consultar),
-        TextosCustom("Em vermelho: abaixo do mínimo", 14, Colors.red),
-        Row(
+        Cartao(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(flex: 3, child: TextosCustom("Ingrediente", 16, Colors.black)),
-            Expanded(flex: 2, child: TextosCustom("Tem", 16, Colors.black)),
-            Expanded(flex: 2, child: TextosCustom("Mínimo", 16, Colors.black)),
+            InputTextos("Buscar ingrediente", "Deixe vazio para ver todos", controller: _busca),
+            SizedBox(height: 12),
+            Buttons("Consultar", onPressed: _consultar),
           ],
+        )),
+        TextosCustom("Ingredientes", 18, Cores.texto, negrito: true),
+        TextosCustom("Toque em um item para editar. Em vermelho com ⚠: abaixo do estoque mínimo, hora de repor.", 13,
+            Cores.textoSuave),
+        SizedBox(height: 10),
+        Cartao(
+          Row(
+            children: [
+              Expanded(flex: 3, child: TextosCustom("Ingrediente", 14, Cores.texto, negrito: true)),
+              Expanded(flex: 2, child: TextosCustom("Tem", 14, Cores.texto, negrito: true)),
+              Expanded(flex: 2, child: TextosCustom("Mínimo (alerta)", 14, Cores.texto, negrito: true)),
+            ],
+          ),
+          cor: Cores.cabecalho,
         ),
-        Divider(),
         Column(children: _itens),
-        Divider(),
-        TextosCustom("Editar ou excluir", 20, Colors.black87),
-        InputTextos("Nome do ingrediente", "Ex.: arroz", controller: _nome),
-        Row(
+        SizedBox(height: 8),
+        Cartao(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              flex: 1,
-              child: InputTextos("Quantidade", "Ex.: 3", controller: _quantidade),
+            TextosCustom("Editar ou excluir", 18, Cores.texto, negrito: true),
+            SizedBox(height: 12),
+            InputTextos("Nome do ingrediente", "Ex.: arroz", controller: _nome),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: InputTextos("Quantidade", "Ex.: 3", controller: _quantidade),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  flex: 1,
+                  child: InputTextos("Unidade", "kg, g, l, un", controller: _unidade),
+                ),
+              ],
             ),
-            SizedBox(width: 12),
-            Expanded(
-              flex: 1,
-              child: InputTextos("Unidade", "kg, g, l, un", controller: _unidade),
+            SizedBox(height: 10),
+            InputTextos("Estoque mínimo (alerta)", "Ex.: 1", controller: _minimo),
+            SizedBox(height: 6),
+            TextosCustom(
+                "É o quanto você quer ter sempre em casa. Quando o estoque ficar abaixo "
+                "desse valor, o app avisa em vermelho com ⚠ na Despensa e na Lista de compras. "
+                "Ex.: mínimo 1 kg de feijão → aviso quando tiver menos de 1 kg. "
+                "Deixe em branco para não receber aviso.",
+                13, Cores.textoSuave),
+            SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(child: Buttons("Atualizar", onPressed: _atualizar)),
+                SizedBox(width: 10),
+                Expanded(child: Buttons("Excluir", onPressed: _excluir)),
+              ],
             ),
           ],
-        ),
-        InputTextos("Quantidade mínima", "Ex.: 1", controller: _minimo),
-        Row(
-          children: [
-            Expanded(child: Buttons("Atualizar", onPressed: _atualizar)),
-            SizedBox(width: 12),
-            Expanded(child: Buttons("Excluir", onPressed: _excluir)),
-          ],
-        ),
-        TextosCustom(_mensagem, 16, Colors.black87),
+        )),
+        TextosCustom(_mensagem, 16, Cores.secundaria, negrito: true, centralizado: true),
       ],
     );
   }
@@ -90,24 +119,40 @@ class _TelaDespensaState extends State<TelaDespensa> {
     int index = 0;
     list.forEach((element) {
       bool baixo = list[index]['quantidade'] < list[index]['minimo'];
-      Color cor = baixo ? Colors.red : Colors.black87;
-      _itens.add(Row(
-        children: [
-          Expanded(flex: 3, child: TextosCustom(list[index]['nome'], 16, cor)),
-          Expanded(
-              flex: 2,
-              child: TextosCustom(
-                  Ingrediente.formatar(list[index]['quantidade']) + " " + list[index]['unidade'],
-                  16, cor)),
-          Expanded(
-              flex: 2,
-              child: TextosCustom(Ingrediente.formatar(list[index]['minimo']), 16, cor)),
-        ],
+      Color cor = baixo ? Cores.alerta : Cores.texto;
+      _itens.add(InkWell(
+        onTap: () {
+          // preenche os campos de edicao com o item tocado
+          _nome.text = element['nome'];
+          _quantidade.text = Ingrediente.formatar(element['quantidade']);
+          _unidade.text = element['unidade'];
+          _minimo.text = Ingrediente.formatar(element['minimo']);
+        },
+        child: Cartao(
+          Row(
+            children: [
+              Expanded(
+                  flex: 3,
+                  child: TextosCustom((baixo ? "⚠ " : "") + list[index]['nome'], 16, cor,
+                      negrito: baixo)),
+              Expanded(
+                  flex: 2,
+                  child: TextosCustom(
+                      Ingrediente.formatar(list[index]['quantidade']) + " " + list[index]['unidade'],
+                      16, cor)),
+              Expanded(
+                  flex: 2,
+                  child: TextosCustom(Ingrediente.formatar(list[index]['minimo']), 16, cor)),
+            ],
+          ),
+          cor: baixo ? Cores.fundoAlerta : Cores.cartao,
+        ),
       ));
       index++;
     });
     if (list.length == 0) {
-      _itens.add(TextosCustom("Nenhum ingrediente encontrado.", 16, Colors.grey));
+      _itens.add(TextosCustom("Nenhum ingrediente encontrado.", 15, Cores.textoSuave,
+          centralizado: true));
     }
     setState(() {});
   }

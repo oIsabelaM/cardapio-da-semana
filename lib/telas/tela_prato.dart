@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../control/control_prato.dart';
 import '../model/ingrediente.dart';
 import '../model/prato.dart';
+import '../widgets/cores.dart';
 import '../widgets/widget_button.dart';
+import '../widgets/widget_cartao.dart';
 import '../widgets/widget_input.dart';
 import '../widgets/widget_text_custom.dart';
 
@@ -41,36 +43,54 @@ class _TelaPratoState extends State<TelaPrato> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        InputTextos("Nome do prato", "Ex.: arroz com feijão", controller: _nomePrato),
-        Row(
+        Cartao(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(child: Buttons("Cadastrar prato", onPressed: _cadastrar)),
-            SizedBox(width: 12),
-            Expanded(child: Buttons("Excluir prato", onPressed: _excluir)),
-          ],
-        ),
-        Divider(),
-        TextosCustom("Ingredientes do prato", 20, Colors.black87),
-        TextosCustom("O ingrediente precisa estar cadastrado na despensa.", 14, Colors.grey),
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: InputTextos("Ingrediente", "Ex.: arroz", controller: _ingrediente),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              flex: 1,
-              child: InputTextos("Quantidade", "Ex.: 0,5", controller: _quantidade),
+            TextosCustom("Prato", 18, Cores.texto, negrito: true),
+            SizedBox(height: 12),
+            InputTextos("Nome do prato", "Ex.: arroz com feijão", controller: _nomePrato),
+            SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(child: Buttons("Cadastrar", onPressed: _cadastrar)),
+                SizedBox(width: 10),
+                Expanded(child: Buttons("Excluir", onPressed: _excluir)),
+              ],
             ),
           ],
-        ),
-        Buttons("Adicionar ingrediente", onPressed: _adicionarIngrediente),
-        TextosCustom(_mensagem, 16, Colors.black87),
-        Divider(),
-        TextosCustom("Pratos cadastrados", 20, Colors.black87),
+        )),
+        Cartao(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextosCustom("Ingredientes do prato", 18, Cores.texto, negrito: true),
+            SizedBox(height: 4),
+            TextosCustom("O ingrediente precisa estar cadastrado na despensa.", 13,
+                Cores.textoSuave),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: InputTextos("Ingrediente", "Ex.: arroz", controller: _ingrediente),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  flex: 1,
+                  child: InputTextos("Qtd.", "Ex.: 0,5", controller: _quantidade),
+                ),
+              ],
+            ),
+            SizedBox(height: 14),
+            Buttons("Adicionar ingrediente", onPressed: _adicionarIngrediente),
+          ],
+        )),
+        TextosCustom(_mensagem, 16, Cores.secundaria, negrito: true, centralizado: true),
+        SizedBox(height: 12),
+        TextosCustom("Pratos cadastrados", 18, Cores.texto, negrito: true),
+        TextosCustom("Toque em um prato para selecioná-lo.", 13, Cores.textoSuave),
+        SizedBox(height: 10),
         Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: _itens,
         ),
       ],
@@ -136,27 +156,54 @@ class _TelaPratoState extends State<TelaPrato> {
     List<Map<String, dynamic>> list = await control.queryFind("");
     _itens = [];
     String pratoAtual = "";
+    List<Widget> linhas = [];
     int index = 0;
     list.forEach((element) {
       if (list[index]['prato'] != pratoAtual) {
+        if (pratoAtual != "") {
+          _itens.add(_cartaoPrato(pratoAtual, linhas));
+        }
         pratoAtual = list[index]['prato'];
-        _itens.add(SizedBox(height: 8));
-        _itens.add(TextosCustom(pratoAtual, 18, Colors.teal));
+        linhas = [];
       }
       if (list[index]['ingrediente'] != null) {
-        _itens.add(TextosCustom(
-            "   • " + list[index]['ingrediente'] + ": " +
+        linhas.add(TextosCustom(
+            "• " + list[index]['ingrediente'] + ": " +
                 Ingrediente.formatar(list[index]['quantidade']) + " " +
                 list[index]['unidade'],
-            16, Colors.black87));
+            15, Cores.texto));
       } else {
-        _itens.add(TextosCustom("   (sem ingredientes)", 16, Colors.grey));
+        linhas.add(TextosCustom("(sem ingredientes)", 15, Cores.textoSuave));
       }
       index++;
     });
+    if (pratoAtual != "") {
+      _itens.add(_cartaoPrato(pratoAtual, linhas));
+    }
     if (list.length == 0) {
-      _itens.add(TextosCustom("Nenhum prato cadastrado.", 16, Colors.grey));
+      _itens.add(TextosCustom("Nenhum prato cadastrado.", 15, Cores.textoSuave,
+          centralizado: true));
     }
     setState(() {});
+  }
+
+  // um cartao por prato, com o nome e a lista de ingredientes
+  Widget _cartaoPrato(String nome, List<Widget> linhas) {
+    return InkWell(
+      onTap: () {
+        _nomePrato.text = nome;
+      },
+      child: Cartao(Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextosCustom(nome, 17, Cores.primaria, negrito: true),
+          SizedBox(height: 6),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: linhas,
+          ),
+        ],
+      )),
+    );
   }
 }

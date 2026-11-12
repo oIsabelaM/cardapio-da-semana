@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'cores.dart';
+
 class InputTextos extends StatelessWidget {
   String rotulo; //Podera atribuir um rotulo
   String label; //Podera atribuir um "hint"
@@ -14,8 +16,8 @@ class InputTextos extends StatelessWidget {
     return TextFormField(
       controller: controller,
       style: TextStyle(
-        color: Colors.black,
-        backgroundColor: Colors.white,
+        color: Cores.texto,
+        fontSize: 16,
       ),
       decoration: InputDecoration(
         labelText: rotulo,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/cores.dart';
 import '../widgets/widget_button.dart';
 import '../widgets/widget_text_custom.dart';
 import 'tela_Ingrediente.dart';
@@ -21,12 +22,22 @@ class Menu extends StatelessWidget {
 
   _body(BuildContext ctx) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextosCustom("O que vamos fazer hoje?", 22, Colors.black87),
+          Column(
+            children: [
+              Icon(Icons.restaurant_menu, size: 64, color: Cores.primaria),
+              SizedBox(height: 12),
+              TextosCustom("O que vamos fazer hoje?", 22, Cores.texto,
+                  negrito: true, centralizado: true),
+              SizedBox(height: 4),
+              TextosCustom("Planeje as refeições e controle a despensa", 14,
+                  Cores.textoSuave, centralizado: true),
+            ],
+          ),
           Buttons("Cadastrar ingrediente", onPressed: () {
             _abreTelas(ctx, TelaIngrediente());
           }),

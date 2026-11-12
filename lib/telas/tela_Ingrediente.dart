@@ -3,7 +3,9 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 import '../control/control_ingrediente.dart';
 import '../model/ingrediente.dart';
+import '../widgets/cores.dart';
 import '../widgets/widget_button.dart';
+import '../widgets/widget_cartao.dart';
 import '../widgets/widget_input.dart';
 import '../widgets/widget_text_custom.dart';
 
@@ -45,27 +47,56 @@ class _TelaIngredienteState extends State<TelaIngrediente> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Buttons(_ouvindo ? "Ouvindo... toque para parar" : "Falar ingrediente",
-            onPressed: _ouvir),
-        TextosCustom("Ex.: \"dois quilos e meio de arroz\"", 14, Colors.grey),
-        TextosCustom("Entendido: $_textoFalado", 16, Colors.blueGrey),
-        InputTextos("Nome", "Ex.: arroz", controller: _nome),
-        Row(
+        Cartao(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              flex: 1,
-              child: InputTextos("Quantidade", "Ex.: 2,5", controller: _quantidade),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              flex: 1,
-              child: InputTextos("Unidade", "kg, g, l, un", controller: _unidade),
-            ),
+            TextosCustom("Cadastro por voz", 18, Cores.texto, negrito: true),
+            SizedBox(height: 4),
+            TextosCustom("Toque no botão e fale, por exemplo: \"dois quilos e meio de arroz\"",
+                14, Cores.textoSuave),
+            SizedBox(height: 12),
+            Buttons(_ouvindo ? "Ouvindo... toque para parar" : "Falar ingrediente",
+                onPressed: _ouvir),
+            if (_textoFalado != "") SizedBox(height: 10),
+            if (_textoFalado != "")
+              TextosCustom("Entendido: \"$_textoFalado\"", 15, Cores.secundaria,
+                  centralizado: true),
           ],
-        ),
-        InputTextos("Quantidade mínima", "Ex.: 1", controller: _minimo),
-        Buttons("Registrar", onPressed: _registrar),
-        TextosCustom(_mensagem, 16, Colors.black87),
+        )),
+        Cartao(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextosCustom("Dados do ingrediente", 18, Cores.texto, negrito: true),
+            SizedBox(height: 12),
+            InputTextos("Nome", "Ex.: arroz", controller: _nome),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: InputTextos("Quantidade", "Ex.: 2,5", controller: _quantidade),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  flex: 1,
+                  child: InputTextos("Unidade", "kg, g, l, un", controller: _unidade),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            InputTextos("Estoque mínimo (alerta)", "Ex.: 1", controller: _minimo),
+            SizedBox(height: 6),
+            TextosCustom(
+                "É o quanto você quer ter sempre em casa. Quando o estoque ficar abaixo "
+                "desse valor, o app avisa em vermelho com ⚠ na Despensa e na Lista de compras. "
+                "Ex.: mínimo 1 kg de feijão → aviso quando tiver menos de 1 kg. "
+                "Deixe em branco para não receber aviso.",
+                13, Cores.textoSuave),
+            SizedBox(height: 14),
+            Buttons("Registrar", onPressed: _registrar),
+          ],
+        )),
+        TextosCustom(_mensagem, 16, Cores.secundaria, negrito: true, centralizado: true),
       ],
     );
   }

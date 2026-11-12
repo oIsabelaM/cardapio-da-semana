@@ -34,10 +34,13 @@ lib/
   control/    control_ingrediente.dart, control_prato.dart, control_cardapio.dart
   telas/      menu.dart, tela_Ingrediente.dart, tela_despensa.dart,
               tela_prato.dart, tela_cardapio.dart, tela_compras.dart
-  widgets/    widget_button.dart, widget_input.dart, widget_text_custom.dart
+  widgets/    widget_button.dart, widget_input.dart, widget_text_custom.dart,
+              widget_cartao.dart, cores.dart
 ```
 
 Layouts usados: Row, Column, Expanded (flex) e ListView.
+
+Visual: paleta de tons suaves (terracota, verde-sálvia e creme) definida em `widgets/cores.dart` e aplicada pelo tema do `MaterialApp`; os elementos de cada tela são agrupados em cartões (`widget_cartao.dart`).
 
 ## Banco de dados (cardapio.db)
 
