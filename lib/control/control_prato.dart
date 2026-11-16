@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
+import '../model/ingrediente.dart';
 import '../model/prato.dart';
 
 class ControlPrato {
@@ -52,23 +53,38 @@ class ControlPrato {
     }
   }
 
-  // RF04 - liga um ingrediente ao prato
-  // retorna -1 se o prato nao existe, -2 se o ingrediente nao existe
-  Future<int> insertIngrediente(
-      String nomePrato, String nomeIngrediente, double quantidade) async {
+  // RF04 - liga um ingrediente ao prato (se o prato nao existir, cadastra junto)
+  // unidadeDigitada: unidade escrita junto da quantidade ("g", "kg"...) ou ""
+  // retorna -2 se o ingrediente nao esta na despensa, -3 se a unidade nao combina
+  Future<int> insertIngrediente(String nomePrato, String nomeIngrediente,
+      double quantidade, String unidadeDigitada) async {
     Database db = await startDatabase();
     try {
-      List<Map<String, dynamic>> prato = await db.rawQuery(
-          "SELECT id FROM prato WHERE nome = '" + nomePrato + "'");
-      if (prato.length == 0) {
-        return -1;
-      }
       List<Map<String, dynamic>> ingrediente = await db.rawQuery(
-          "SELECT id FROM ingrediente WHERE nome = '" + nomeIngrediente + "'");
+          "SELECT id, unidade FROM ingrediente WHERE nome = '" + nomeIngrediente + "'");
       if (ingrediente.length == 0) {
         return -2;
       }
-      String idPrato = prato[0]['id'].toString();
+      String unidadeDespensa =
+          Ingrediente.normalizarUnidade(ingrediente[0]['unidade'].toString());
+      if (unidadeDigitada != "" && unidadeDigitada != unidadeDespensa) {
+        quantidade = Ingrediente.converter(quantidade, unidadeDigitada, unidadeDespensa);
+        if (quantidade < 0) {
+          return -3;
+        }
+      }
+
+      List<Map<String, dynamic>> prato = await db.rawQuery(
+          "SELECT id FROM prato WHERE nome = '" + nomePrato + "'");
+      String idPrato = "";
+      if (prato.length == 0) {
+        int novoId = await db.rawInsert(
+            "INSERT INTO prato (nome) VALUES ('" + nomePrato + "')");
+        idPrato = novoId.toString();
+      } else {
+        idPrato = prato[0]['id'].toString();
+      }
+
       String idIngrediente = ingrediente[0]['id'].toString();
       await db.rawDelete("DELETE FROM prato_ingrediente WHERE id_prato = " +
           idPrato + " AND id_ingrediente = " + idIngrediente);

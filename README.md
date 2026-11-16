@@ -33,13 +33,15 @@ O **Cardápio da Semana** junta três coisas num lugar só:
 Siga esta ordem na primeira vez.
 
 ### 1. Cadastrar ingrediente
-Informe o **nome**, a **quantidade**, a **unidade** (kg, g, l, un...) e o **estoque mínimo**. Se o ingrediente já existir, a quantidade nova é **somada** à anterior.
+Informe o **nome**, a **quantidade**, a **unidade** (kg, g, l, un...) e o **estoque mínimo**. Se o ingrediente já existir, a quantidade nova é **somada** à anterior, já convertida para a unidade que estava na despensa (ex.: 5 kg + 500 g = 5,5 kg).
+
+A quantidade e o estoque mínimo aceitam a unidade escrita junto (*500 g*, *0,5 kg*): o app converte para a unidade do ingrediente. Sem unidade, vale a do campo **Unidade**.
 
 **Por voz:** toque em **"Falar ingrediente"** e diga, por exemplo, *"dois quilos e meio de arroz"*. O app preenche os campos (2,5 / kg / arroz), você confere e toca em **Registrar**.
 
 > **O que é o "estoque mínimo (alerta)"?**
 > É o quanto você quer ter **sempre** em casa. Quando o estoque fica abaixo desse valor, o app avisa **em vermelho com ⚠**.
-> Exemplo: com mínimo de 1 kg de feijão, o aviso aparece quando sobrar menos de 1 kg. Se o campo ficar em branco, não há aviso.
+> Exemplo: com mínimo de 1 kg de feijão, o aviso aparece quando sobrar menos de 1 kg. Para um ingrediente em kg, escrever *500 g* no mínimo equivale a 0,5 kg. Se o campo ficar em branco, não há aviso.
 
 ### 2. Despensa
 Mostra tudo o que você tem em casa. Os itens **abaixo do estoque mínimo** aparecem em vermelho com ⚠.
@@ -47,9 +49,10 @@ Mostra tudo o que você tem em casa. Os itens **abaixo do estoque mínimo** apar
 - **Editar ou excluir:** toque num item para preencher os campos, altere o que quiser e toque em **Atualizar** ou **Excluir**.
 
 ### 3. Pratos
-Cadastre as receitas e o que cada uma usa.
-1. Digite o nome do prato (ex.: *arroz com feijão*) e toque em **Cadastrar**.
-2. Adicione os ingredientes um a um, com a quantidade usada (ex.: arroz 0,5; feijão 0,25), tocando em **Adicionar ingrediente**.
+Cadastre as receitas e o que cada uma usa. Basta preencher o **nome do prato**, o **ingrediente** e a **quantidade** e tocar em **Adicionar ingrediente**. Se o prato ainda não existir, ele é cadastrado junto. Repita para cada ingrediente do prato.
+
+- A quantidade pode levar a unidade: *500 g*, *0,5 kg*, *200 ml*... O app converte para a unidade da despensa (g ↔ kg, ml ↔ l).
+- Sem unidade (ex.: *0,5*), vale a mesma unidade do ingrediente na despensa.
 
 > O ingrediente precisa estar cadastrado na despensa antes.
 
@@ -126,7 +129,7 @@ As permissões já estão no `android/app/src/main/AndroidManifest.xml`:
 ## Roteiro de teste rápido
 
 1. **Cadastrar ingrediente:** arroz, 2, kg, mínimo 1. Depois feijão, 0,3, kg, mínimo 1.
-2. **Pratos:** "arroz com feijão", com arroz 0,5 e feijão 0,25.
+2. **Pratos:** "arroz com feijão", com arroz 500 g e feijão 250 g (o app converte para 0,5 e 0,25 kg).
 3. **Cardápio:** segunda, almoço, arroz com feijão → Salvar.
 4. **Lista de compras:** o feijão aparece para comprar.
 5. **Cardápio:** segunda, almoço → Marcar como preparado.

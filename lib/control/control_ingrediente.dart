@@ -37,17 +37,30 @@ class ControlIngrediente {
   }
 
   // RF01 / RF02 - se o ingrediente ja existe, soma a quantidade
+  // (convertendo para a unidade que ja estava na despensa: 500 g + 5 kg = 5,5 kg)
+  // retorna -2 se a unidade nova nao combina com a que ja existe (ex.: kg e un)
   Future<int> insertDatabase(Ingrediente ingrediente) async {
     Database db = await startDatabase();
     try {
       List<Map<String, dynamic>> existe = await db.rawQuery(
           "SELECT * FROM ingrediente WHERE nome = '" + ingrediente.nome + "'");
       if (existe.length > 0) {
+        String unidadeAtual = Ingrediente.normalizarUnidade(existe[0]['unidade'].toString());
+        double quantidade =
+            Ingrediente.converter(ingrediente.quantidade, ingrediente.unidade, unidadeAtual);
+        double minimo = ingrediente.minimo == 0
+            ? 0
+            : Ingrediente.converter(ingrediente.minimo, ingrediente.unidade, unidadeAtual);
+        if (quantidade < 0 || minimo < 0) {
+          return -2;
+        }
         String sqlSoma = "UPDATE ingrediente SET quantidade = quantidade + " +
-            ingrediente.quantidade.toString() +
-            ", unidade = '" + ingrediente.unidade +
-            "', minimo = " + ingrediente.minimo.toString() +
-            " WHERE nome = '" + ingrediente.nome + "'";
+            quantidade.toString();
+        // so troca o minimo se um novo foi informado
+        if (minimo > 0) {
+          sqlSoma = sqlSoma + ", minimo = " + minimo.toString();
+        }
+        sqlSoma = sqlSoma + " WHERE nome = '" + ingrediente.nome + "'";
         return await db.rawUpdate(sqlSoma);
       }
       String sql = "INSERT INTO ingrediente (nome, quantidade, unidade, minimo) VALUES ('" +

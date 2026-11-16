@@ -64,8 +64,11 @@ class _TelaPratoState extends State<TelaPrato> {
           children: [
             TextosCustom("Ingredientes do prato", 18, Cores.texto, negrito: true),
             SizedBox(height: 4),
-            TextosCustom("O ingrediente precisa estar cadastrado na despensa.", 13,
-                Cores.textoSuave),
+            TextosCustom(
+                "Pode adicionar direto: se o prato ainda não existir, ele é cadastrado junto. "
+                "O ingrediente precisa estar na despensa. Na quantidade, pode escrever a "
+                "unidade (ex.: 500 g ou 0,5 kg).",
+                13, Cores.textoSuave),
             SizedBox(height: 12),
             Row(
               children: [
@@ -76,7 +79,7 @@ class _TelaPratoState extends State<TelaPrato> {
                 SizedBox(width: 10),
                 Expanded(
                   flex: 1,
-                  child: InputTextos("Qtd.", "Ex.: 0,5", controller: _quantidade),
+                  child: InputTextos("Qtd.", "Ex.: 500 g", controller: _quantidade),
                 ),
               ],
             ),
@@ -116,19 +119,26 @@ class _TelaPratoState extends State<TelaPrato> {
   _adicionarIngrediente() async {
     String prato = Ingrediente.limpar(_nomePrato.text);
     String ingrediente = Ingrediente.limpar(_ingrediente.text);
-    double quantidade = Ingrediente.lerNumero(_quantidade.text);
+    // separa o numero da unidade: "500gr" -> 500 e "g"
+    String textoQtd = _quantidade.text.trim().toLowerCase();
+    double quantidade =
+        Ingrediente.lerNumero(textoQtd.replaceAll(RegExp(r'[^0-9.,]'), ""));
+    String unidade =
+        Ingrediente.normalizarUnidade(textoQtd.replaceAll(RegExp(r'[0-9.,\s]'), ""));
     if (prato == "" || ingrediente == "" || quantidade <= 0) {
       setState(() {
-        _mensagem = "Preencha prato, ingrediente e quantidade.";
+        _mensagem = "Preencha o prato, o ingrediente e a quantidade (ex.: 0,5 ou 500 g).";
       });
       return;
     }
     var control = new ControlPrato();
-    int resultado = await control.insertIngrediente(prato, ingrediente, quantidade);
-    if (resultado == -1) {
-      _mensagem = "Cadastre o prato \"$prato\" primeiro.";
-    } else if (resultado == -2) {
-      _mensagem = "\"$ingrediente\" não está na despensa. Cadastre-o primeiro.";
+    int resultado =
+        await control.insertIngrediente(prato, ingrediente, quantidade, unidade);
+    if (resultado == -2) {
+      _mensagem = "\"$ingrediente\" não está na despensa. Cadastre-o primeiro em Cadastrar ingrediente.";
+    } else if (resultado == -3) {
+      _mensagem = "A unidade \"$unidade\" não combina com a do ingrediente na despensa. "
+          "Use a mesma unidade (ou g/kg, ml/l).";
     } else {
       _mensagem = "\"$ingrediente\" adicionado em \"$prato\".";
       _ingrediente.text = "";

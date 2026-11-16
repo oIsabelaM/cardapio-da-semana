@@ -95,6 +95,7 @@ class _TelaDespensaState extends State<TelaDespensa> {
                 "É o quanto você quer ter sempre em casa. Quando o estoque ficar abaixo "
                 "desse valor, o app avisa em vermelho com ⚠ na Despensa e na Lista de compras. "
                 "Ex.: mínimo 1 kg de feijão → aviso quando tiver menos de 1 kg. "
+                "Pode escrever a unidade (ex.: 500 g ou 0,5 kg); sem unidade, vale a do ingrediente. "
                 "Deixe em branco para não receber aviso.",
                 13, Cores.textoSuave),
             SizedBox(height: 14),
@@ -142,7 +143,9 @@ class _TelaDespensaState extends State<TelaDespensa> {
                       16, cor)),
               Expanded(
                   flex: 2,
-                  child: TextosCustom(Ingrediente.formatar(list[index]['minimo']), 16, cor)),
+                  child: TextosCustom(
+                      Ingrediente.formatar(list[index]['minimo']) + " " + list[index]['unidade'],
+                      16, cor)),
             ],
           ),
           cor: baixo ? Cores.fundoAlerta : Cores.cartao,
@@ -159,11 +162,29 @@ class _TelaDespensaState extends State<TelaDespensa> {
 
   _atualizar() async {
     String nome = Ingrediente.limpar(_nome.text);
-    double quantidade = Ingrediente.lerNumero(_quantidade.text);
-    double minimo = _minimo.text.trim() == "" ? 0 : Ingrediente.lerNumero(_minimo.text);
-    if (nome == "" || quantidade < 0 || minimo < 0) {
+    // unidade: a do campo Unidade; se estiver vazio, a escrita na quantidade ("2kg"); senao "un"
+    String unidade = Ingrediente.normalizarUnidade(Ingrediente.limpar(_unidade.text));
+    if (unidade == "") {
+      unidade = Ingrediente.unidadeDoTexto(_quantidade.text);
+    }
+    if (unidade == "") {
+      unidade = "un";
+    }
+    // quantidade e minimo aceitam unidade ("500 g") e sao convertidos para a unidade do ingrediente
+    double quantidade = Ingrediente.lerComUnidade(_quantidade.text, unidade);
+    double minimo =
+        _minimo.text.trim() == "" ? 0 : Ingrediente.lerComUnidade(_minimo.text, unidade);
+
+    if (nome == "" || quantidade == -1 || minimo == -1) {
       setState(() {
         _mensagem = "Preencha nome, quantidade e mínimo com números válidos.";
+      });
+      return;
+    }
+    if (quantidade == -2 || minimo == -2) {
+      setState(() {
+        _mensagem = "A unidade da quantidade ou do mínimo não combina com \"$unidade\". "
+            "Use a mesma unidade (ou g/kg, ml/l).";
       });
       return;
     }
@@ -171,7 +192,7 @@ class _TelaDespensaState extends State<TelaDespensa> {
     int alterados = await control.updateDatabase(Ingrediente(
       nome: nome,
       quantidade: quantidade,
-      unidade: _unidade.text.trim() == "" ? "un" : Ingrediente.limpar(_unidade.text),
+      unidade: unidade,
       minimo: minimo,
     ));
     _mensagem = alterados > 0 ? "\"$nome\" atualizado!" : "Ingrediente \"$nome\" não encontrado.";

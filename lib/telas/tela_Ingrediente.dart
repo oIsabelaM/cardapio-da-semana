@@ -90,6 +90,7 @@ class _TelaIngredienteState extends State<TelaIngrediente> {
                 "É o quanto você quer ter sempre em casa. Quando o estoque ficar abaixo "
                 "desse valor, o app avisa em vermelho com ⚠ na Despensa e na Lista de compras. "
                 "Ex.: mínimo 1 kg de feijão → aviso quando tiver menos de 1 kg. "
+                "Pode escrever a unidade (ex.: 500 g ou 0,5 kg); sem unidade, vale a do ingrediente. "
                 "Deixe em branco para não receber aviso.",
                 13, Cores.textoSuave),
             SizedBox(height: 14),
@@ -235,23 +236,47 @@ class _TelaIngredienteState extends State<TelaIngrediente> {
 
   _registrar() async {
     String nome = Ingrediente.limpar(_nome.text);
-    double quantidade = Ingrediente.lerNumero(_quantidade.text);
-    double minimo = _minimo.text.trim() == "" ? 0 : Ingrediente.lerNumero(_minimo.text);
+    // unidade: a do campo Unidade; se estiver vazio, a escrita na quantidade ("2kg"); senao "un"
+    String unidade = Ingrediente.normalizarUnidade(Ingrediente.limpar(_unidade.text));
+    if (unidade == "") {
+      unidade = Ingrediente.unidadeDoTexto(_quantidade.text);
+    }
+    if (unidade == "") {
+      unidade = "un";
+    }
+    // quantidade e minimo aceitam unidade ("500 g") e sao convertidos para a unidade do ingrediente
+    double quantidade = Ingrediente.lerComUnidade(_quantidade.text, unidade);
+    double minimo =
+        _minimo.text.trim() == "" ? 0 : Ingrediente.lerComUnidade(_minimo.text, unidade);
 
-    if (nome == "" || quantidade < 0 || minimo < 0) {
+    if (nome == "" || quantidade == -1 || minimo == -1) {
       setState(() {
         _mensagem = "Preencha nome, quantidade e mínimo com números válidos.";
       });
       return;
     }
+    if (quantidade == -2 || minimo == -2) {
+      setState(() {
+        _mensagem = "A unidade da quantidade ou do mínimo não combina com \"$unidade\". "
+            "Use a mesma unidade (ou g/kg, ml/l).";
+      });
+      return;
+    }
 
     var control = new ControlIngrediente();
-    await control.insertDatabase(Ingrediente(
+    int resultado = await control.insertDatabase(Ingrediente(
       nome: nome,
       quantidade: quantidade,
-      unidade: _unidade.text.trim() == "" ? "un" : Ingrediente.limpar(_unidade.text),
+      unidade: unidade,
       minimo: minimo,
     ));
+    if (resultado == -2) {
+      setState(() {
+        _mensagem = "\"$nome\" já está na despensa em outra unidade, que não dá para converter. "
+            "Use a mesma unidade (ou g/kg, ml/l).";
+      });
+      return;
+    }
 
     _nome.text = "";
     _quantidade.text = "";
