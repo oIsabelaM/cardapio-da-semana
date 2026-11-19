@@ -22,6 +22,7 @@ class _TelaPratoState extends State<TelaPrato> {
 
   List<Widget> _itens = [];
   String _mensagem = "";
+  String _confirmarExclusao = ""; // nome que espera o segundo toque em Excluir
 
   @override
   void initState() {
@@ -54,7 +55,9 @@ class _TelaPratoState extends State<TelaPrato> {
               children: [
                 Expanded(child: Buttons("Cadastrar", onPressed: _cadastrar)),
                 SizedBox(width: 10),
-                Expanded(child: Buttons("Excluir", onPressed: _excluir)),
+                Expanded(
+                    child: Buttons(_confirmarExclusao == "" ? "Excluir" : "Confirmar",
+                        onPressed: _excluir)),
               ],
             ),
           ],
@@ -155,6 +158,15 @@ class _TelaPratoState extends State<TelaPrato> {
       });
       return;
     }
+    // primeiro toque so pede confirmacao
+    if (_confirmarExclusao != nome) {
+      setState(() {
+        _confirmarExclusao = nome;
+        _mensagem = "Excluir o prato \"$nome\"? Toque em Confirmar para excluir de vez.";
+      });
+      return;
+    }
+    _confirmarExclusao = "";
     var control = new ControlPrato();
     int excluidos = await control.deleteDatabase(nome);
     _mensagem = excluidos > 0 ? "Prato \"$nome\" excluído!" : "Prato \"$nome\" não encontrado.";
@@ -162,6 +174,7 @@ class _TelaPratoState extends State<TelaPrato> {
   }
 
   _consultar() async {
+    _confirmarExclusao = ""; // qualquer outra acao cancela o pedido de confirmacao
     var control = new ControlPrato();
     List<Map<String, dynamic>> list = await control.queryFind("");
     _itens = [];

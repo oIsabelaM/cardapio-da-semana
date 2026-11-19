@@ -22,7 +22,7 @@ O **Cardápio da Semana** junta três coisas num lugar só:
 - **Evitar desperdício:** você sabe exatamente o que tem e o que vai usar.
 - **Economizar:** compra só o que falta, sem repetir.
 - **Organizar a rotina:** a semana fica planejada, sem a dúvida diária de "o que vamos comer hoje?".
-- **Ser simples:** telas em português, sem cadastro de conta e sem internet. Os dados ficam só no celular.
+- **Ser simples:** telas em português, sem cadastro de conta. Os dados ficam só no celular e o app funciona sem internet (só o cadastro por voz pode precisar de conexão, conforme o aparelho).
 
 **Público:** pessoas e famílias que querem planejar as refeições e controlar o que têm em casa.
 
@@ -46,7 +46,7 @@ A quantidade e o estoque mínimo aceitam a unidade escrita junto (*500 g*, *0,5 
 ### 2. Despensa
 Mostra tudo o que você tem em casa. Os itens **abaixo do estoque mínimo** aparecem em vermelho com ⚠.
 - **Buscar:** digite parte do nome e toque em **Consultar**. Com o campo vazio, aparecem todos.
-- **Editar ou excluir:** toque num item para preencher os campos, altere o que quiser e toque em **Atualizar** ou **Excluir**.
+- **Editar ou excluir:** toque num item para preencher os campos, altere o que quiser e toque em **Atualizar** ou **Excluir**. Excluir pede confirmação (o botão vira **Confirmar**) e também tira o ingrediente dos pratos que o usavam.
 
 ### 3. Pratos
 Cadastre as receitas e o que cada uma usa. Basta preencher o **nome do prato**, o **ingrediente** e a **quantidade** e tocar em **Adicionar ingrediente**. Se o prato ainda não existir, ele é cadastrado junto. Repita para cada ingrediente do prato.
@@ -57,9 +57,12 @@ Cadastre as receitas e o que cada uma usa. Basta preencher o **nome do prato**, 
 > O ingrediente precisa estar cadastrado na despensa antes.
 
 ### 4. Cardápio da semana
-Monte a semana informando o **dia** (*segunda*, *seg*...), a **refeição** (*almoço* ou *jantar*) e o **prato**. Depois toque em **Salvar no cardápio**.
+Monte a semana informando o **dia** (*segunda*, *seg*...), escolhendo a refeição nos botões **Almoço** ou **Jantar** (a escolhida fica com ✓) e digitando o **prato**. Depois toque em **Salvar no cardápio**. Tocar num dia da tabela preenche o campo Dia.
 
-Depois de cozinhar, informe o dia e a refeição e toque em **Marcar como preparado**. Os ingredientes do prato são **descontados da despensa** automaticamente, e o prato fica verde com ✓.
+Depois de cozinhar, com o dia e a refeição escolhidos, toque em **Preparado**. Os ingredientes do prato são **descontados da despensa**, e o prato fica verde com ✓.
+- Se faltar algum ingrediente na despensa, o app **não prepara** e mostra o que falta (ex.: *feijão: 0,05 kg*). Assim a despensa nunca fica com valores errados.
+- Marcou por engano? Toque em **Desfazer**: os ingredientes voltam para a despensa.
+- **Limpar semana** pede um segundo toque para confirmar.
 
 ### 5. Lista de compras
 - **Para o cardápio da semana:** mostra o que falta comprar para os pratos ainda não preparados (o que o cardápio precisa menos o que já tem na despensa).
@@ -67,49 +70,133 @@ Depois de cozinhar, informe o dia e a refeição e toque em **Marcar como prepar
 
 ---
 
-## Requisitos atendidos
+## Especificações do sistema
 
-| Requisito | Onde |
+Organizadas conforme as etapas do documento **"Definições projeto final 2026-2"** da disciplina.
+
+### 1. Tema e segmento de mercado
+
+| Item | Descrição |
 |---|---|
-| RF01 Cadastrar ingrediente | Cadastrar ingrediente |
-| RF02 Cadastrar ingrediente por voz | Cadastrar ingrediente → "Falar ingrediente" |
-| RF03 Manter despensa (consultar, editar, excluir) | Despensa |
-| RF04 Cadastrar prato com ingredientes | Pratos |
-| RF05 Montar cardápio da semana | Cardápio da semana |
-| RF06 Descontar ingredientes ao preparar | Cardápio → "Marcar como preparado" |
-| RF07 Alertar estoque baixo | Despensa e Lista de compras (⚠ vermelho) |
-| RF08 Gerar lista de compras | Lista de compras |
+| Tema | Cardápio semanal com controle de despensa e lista de compras |
+| Segmento | Alimentação doméstica e organização pessoal |
+| Público | Pessoas e famílias que planejam as refeições e querem evitar desperdício |
 
----
+### 2. Requisitos funcionais
 
-## Tecnologias
+| Código | Requisito | Descrição | Onde está no app |
+|---|---|---|---|
+| RF01 | Cadastrar ingrediente | Nome, quantidade, unidade de medida e estoque mínimo | Cadastrar ingrediente |
+| RF02 | Cadastrar ingrediente por voz | Preencher o cadastro pela fala (ex.: "dois quilos de arroz") | Cadastrar ingrediente → "Falar ingrediente" |
+| RF03 | Manter despensa | Consultar, editar e excluir ingredientes | Despensa |
+| RF04 | Cadastrar prato | Prato com os ingredientes e a quantidade de cada um | Pratos |
+| RF05 | Montar cardápio da semana | Prato de cada refeição (almoço e jantar) de cada dia | Cardápio da semana |
+| RF06 | Descontar ingredientes | Ao marcar o prato como preparado, desconta da despensa | Cardápio → "Preparado" / "Desfazer" |
+| RF07 | Alertar estoque baixo | Destacar ingredientes abaixo do estoque mínimo | Despensa e Lista de compras |
+| RF08 | Gerar lista de compras | Ingredientes que faltam para o cardápio da semana | Lista de compras |
 
-- **Flutter (Dart)** e **Android Studio**
-- **SQLite** local, com o pacote [`sqflite`](https://pub.dev/packages/sqflite)
-- **Reconhecimento de voz**, com o pacote [`speech_to_text`](https://pub.dev/packages/speech_to_text)
+### 3. Requisitos não funcionais
 
-## Estrutura do projeto (MVC, como ensinado em aula)
+| Código | Categoria | Descrição |
+|---|---|---|
+| RNF01 | Usabilidade | Telas simples, em português, sem precisar de treinamento |
+| RNF02 | Usabilidade | Na voz, o texto reconhecido aparece nos campos para conferir antes de salvar |
+| RNF03 | Eficiência | Consultas e listagens em até 2 segundos |
+| RNF04 | Confiabilidade | Dados gravados no cadastro e mantidos ao fechar o app |
+| RNF05 | Proteção | Dados somente no aparelho; a fala é processada pelo serviço de reconhecimento do Android e não é gravada pelo app |
+| RNF06 | Ambiental | Android; funciona sem internet, exceto o cadastro por voz, que pode exigir conexão conforme o aparelho |
+| RNF07 | Desenvolvimento | Flutter (Dart), Android Studio, SQLite (`sqflite`) e voz (`speech_to_text`) |
+| RNF08 | Desenvolvimento | Estrutura da aula: pastas `model`, `telas`, `control` e `widgets` (MVC) |
+| RNF09 | Desenvolvimento | Somente os layouts Row, Column, Flex/Expanded e ListView |
+| RNF10 | Desenvolvimento | Código no GitHub, com entregas semanais |
+
+### 4. Arquitetura (padrão derivado do MVC, como ensinado em aula)
+
+| Camada | Pasta | Responsabilidade |
+|---|---|---|
+| Model | `lib/model/` | Classes de dados: `Ingrediente`, `Prato`, `Cardapio` (campos `final`, construtor com `required`, `toString()` e `toMap()`) |
+| View | `lib/telas/` e `lib/widgets/` | Telas (`StatefulWidget` + `_body()` com `ListView`) e componentes reutilizáveis |
+| Control | `lib/control/` | Acesso ao banco SQLite, no molde da classe `ControlCliente` da aula (`startDatabase`, `_onCreate`, SQL com `rawInsert`/`rawQuery`) |
+
+**Justificativa:** o MVC separa os dados, as telas e o acesso ao banco, o que facilita a manutenção e segue a estrutura exigida pela disciplina.
+
+### 5. Banco de dados
+
+| Item | Especificação |
+|---|---|
+| Opção escolhida | **SQLite local** (entre as três opções do professor: SQLite, Firebase ou Broker MQTT) |
+| Pacote | `sqflite` |
+| Arquivo | `cardapio.db`, criado no próprio aparelho na primeira execução (`_onCreate`) |
+| Por que SQLite | Os dados são pessoais e usados só no aparelho; funciona sem internet e não precisa de servidor nem de conta. Firebase exigiria internet e cadastro; MQTT é voltado para troca de mensagens entre dispositivos (IoT), não para guardar dados |
+
+**Tabelas**
+
+| Tabela | Campos | Função |
+|---|---|---|
+| `ingrediente` | id INTEGER (PK), nome TEXT, quantidade REAL, unidade TEXT, minimo REAL | A despensa |
+| `prato` | id INTEGER (PK), nome TEXT | As receitas |
+| `prato_ingrediente` | id INTEGER (PK), id_prato INTEGER, id_ingrediente INTEGER, quantidade REAL | O que cada prato usa (liga prato a ingrediente) |
+| `cardapio` | id INTEGER (PK), dia_semana TEXT, refeicao TEXT, id_prato INTEGER, preparado INTEGER (0/1) | O prato de cada refeição da semana |
+
+**Relacionamentos:** um prato tem vários ingredientes e um ingrediente pode estar em vários pratos (ligação pela tabela `prato_ingrediente`). Cada linha do `cardapio` aponta para um prato.
+
+### 6. Layouts utilizados
+
+Somente os permitidos na disciplina:
+- **Row:** linhas das tabelas e campos lado a lado
+- **Column:** grupos de campos e o menu
+- **Expanded (flex):** colunas proporcionais nas tabelas (ex.: flex 2/3/3 no cardápio)
+- **ListView:** o corpo de todas as telas
+
+### 7. Tecnologias e versões
+
+| Item | Versão / detalhe |
+|---|---|
+| Linguagem | Dart |
+| Framework | Flutter (SDK ≥ 3.44) |
+| IDE | Android Studio |
+| Plataforma | Android (testado no Samsung Galaxy A23) |
+| Banco | `sqflite` 2.4.5 |
+| Voz | `speech_to_text` 7.5.0 |
+| Permissões | `RECORD_AUDIO` (microfone) e `INTERNET` (reconhecimento de voz) |
+
+### 8. Estrutura de pastas
 
 ```
 lib/
-  main.dart          → inicia o app e abre o Menu
-  model/             → classes de dados: Ingrediente, Prato, Cardapio
-  control/           → acesso ao banco SQLite (uma classe por assunto)
-  telas/             → menu e as 5 telas do app
-  widgets/           → Buttons, InputTextos, TextosCustom, Cartao e a paleta de Cores
+  main.dart                     inicia o app (MaterialApp) e abre o Menu
+  model/
+    ingrediente.dart            classe Ingrediente + conversão de unidades (g/kg, ml/l)
+    prato.dart                  classe Prato
+    cardapio.dart               classe Cardapio + leitura do dia e da refeição
+  control/
+    control_ingrediente.dart    cadastrar, consultar, editar, excluir, estoque baixo
+    control_prato.dart          cadastrar prato e ligar ingredientes
+    control_cardapio.dart       montar semana, preparar/desfazer, lista de compras
+  telas/
+    menu.dart                   menu principal
+    tela_Ingrediente.dart       RF01, RF02
+    tela_despensa.dart          RF03, RF07
+    tela_prato.dart             RF04
+    tela_cardapio.dart          RF05, RF06
+    tela_compras.dart           RF07, RF08
+  widgets/
+    widget_button.dart          Buttons (da aula)
+    widget_input.dart           InputTextos (da aula)
+    widget_text_custom.dart     TextosCustom
+    widget_cartao.dart          Cartao (caixa arredondada que agrupa os elementos)
+    cores.dart                  paleta de cores do app
 ```
 
-- **Layouts usados:** Row, Column, Expanded (flex) e ListView.
-- **Visual:** paleta suave (terracota, verde-sálvia e creme), com cada grupo de informações em um cartão.
+### 9. Entregas no GitHub
 
-### Banco de dados (`cardapio.db`)
-
-| Tabela | Campos |
-|---|---|
-| `ingrediente` | id, nome, quantidade, unidade, minimo |
-| `prato` | id, nome |
-| `prato_ingrediente` | id, id_prato, id_ingrediente, quantidade |
-| `cardapio` | id, dia_semana, refeicao, id_prato, preparado |
+| Versão (tag) | Conteúdo | Data |
+|---|---|---|
+| `v0.1.0` | Telas iniciais | 08/11/2026 |
+| `v0.2.0` | Visual novo e README | 12/11/2026 |
+| `v0.3.0` | Correções de unidades e de pratos | 16/11/2026 |
+| `v0.4.0` | Melhorias de usabilidade | 19/11/2026 |
+| `v1.0.0` | Versão da apresentação | até 24/11/2026 |
 
 ---
 
@@ -132,5 +219,5 @@ As permissões já estão no `android/app/src/main/AndroidManifest.xml`:
 2. **Pratos:** "arroz com feijão", com arroz 500 g e feijão 250 g (o app converte para 0,5 e 0,25 kg).
 3. **Cardápio:** segunda, almoço, arroz com feijão → Salvar.
 4. **Lista de compras:** o feijão aparece para comprar.
-5. **Cardápio:** segunda, almoço → Marcar como preparado.
+5. **Cardápio:** segunda + botão Almoço → **Preparado** (com feijão suficiente na despensa).
 6. **Despensa:** o arroz passa para 1,5 kg, e o feijão aparece em vermelho com ⚠.

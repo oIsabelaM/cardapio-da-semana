@@ -100,6 +100,55 @@ class ControlCardapio {
     }
   }
 
+  // RF06 - antes de preparar: ingredientes que nao tem o suficiente na despensa
+  // (lista vazia = pode preparar)
+  Future<List<Map<String, dynamic>>> queryFaltaParaPreparar(
+      String dia, String refeicao) async {
+    Database db = await startDatabase();
+    try {
+      return await db.rawQuery(
+          "SELECT i.nome, i.unidade, pi.quantidade - i.quantidade AS falta "
+          "FROM cardapio c "
+          "JOIN prato_ingrediente pi ON pi.id_prato = c.id_prato "
+          "JOIN ingrediente i ON i.id = pi.id_ingrediente "
+          "WHERE c.dia_semana = '" + dia + "' AND c.refeicao = '" + refeicao + "' "
+          "AND pi.quantidade > i.quantidade "
+          "ORDER BY i.nome");
+    } finally {
+      //await db.close();
+    }
+  }
+
+  // RF06 - desfaz o preparado e devolve os ingredientes para a despensa
+  // retorna -1 se nao tem prato nesse dia/refeicao, -2 se ainda nao foi preparado
+  Future<int> desfazerPreparado(String dia, String refeicao) async {
+    Database db = await startDatabase();
+    try {
+      List<Map<String, dynamic>> itens = await db.rawQuery(
+          "SELECT id, id_prato, preparado FROM cardapio WHERE dia_semana = '" +
+              dia + "' AND refeicao = '" + refeicao + "'");
+      if (itens.length == 0) {
+        return -1;
+      }
+      if (itens[0]['preparado'] == 0) {
+        return -2;
+      }
+      String idPrato = itens[0]['id_prato'].toString();
+      List<Map<String, dynamic>> ingredientes = await db.rawQuery(
+          "SELECT id_ingrediente, quantidade FROM prato_ingrediente WHERE id_prato = " + idPrato);
+      // for em vez de forEach para esperar (await) cada devolucao
+      for (var element in ingredientes) {
+        await db.rawUpdate("UPDATE ingrediente SET quantidade = quantidade + " +
+            element['quantidade'].toString() +
+            " WHERE id = " + element['id_ingrediente'].toString());
+      }
+      return await db.rawUpdate("UPDATE cardapio SET preparado = 0 WHERE id = " +
+          itens[0]['id'].toString());
+    } finally {
+      //await db.close();
+    }
+  }
+
   // RF08 - o que falta comprar para os pratos ainda nao preparados
   Future<List<Map<String, dynamic>>> queryListaCompras() async {
     Database db = await startDatabase();

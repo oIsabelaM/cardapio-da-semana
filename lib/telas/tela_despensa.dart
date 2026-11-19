@@ -23,6 +23,7 @@ class _TelaDespensaState extends State<TelaDespensa> {
 
   List<Widget> _itens = [];
   String _mensagem = "";
+  String _confirmarExclusao = ""; // nome que espera o segundo toque em Excluir
 
   @override
   void initState() {
@@ -103,7 +104,9 @@ class _TelaDespensaState extends State<TelaDespensa> {
               children: [
                 Expanded(child: Buttons("Atualizar", onPressed: _atualizar)),
                 SizedBox(width: 10),
-                Expanded(child: Buttons("Excluir", onPressed: _excluir)),
+                Expanded(
+                    child: Buttons(_confirmarExclusao == "" ? "Excluir" : "Confirmar",
+                        onPressed: _excluir)),
               ],
             ),
           ],
@@ -114,6 +117,7 @@ class _TelaDespensaState extends State<TelaDespensa> {
   }
 
   _consultar() async {
+    _confirmarExclusao = ""; // qualquer outra acao cancela o pedido de confirmacao
     var control = new ControlIngrediente();
     List<Map<String, dynamic>> list = await control.queryFind(Ingrediente.limpar(_busca.text));
     _itens = [];
@@ -207,9 +211,20 @@ class _TelaDespensaState extends State<TelaDespensa> {
       });
       return;
     }
+    // primeiro toque so pede confirmacao
+    if (_confirmarExclusao != nome) {
+      setState(() {
+        _confirmarExclusao = nome;
+        _mensagem = "Excluir o ingrediente \"$nome\"? Toque em Confirmar para excluir de vez.";
+      });
+      return;
+    }
+    _confirmarExclusao = "";
     var control = new ControlIngrediente();
     int excluidos = await control.deleteDatabase(nome);
-    _mensagem = excluidos > 0 ? "\"$nome\" excluído!" : "Ingrediente \"$nome\" não encontrado.";
+    _mensagem = excluidos > 0
+        ? "\"$nome\" excluído da despensa e dos pratos que o usavam."
+        : "Ingrediente \"$nome\" não encontrado.";
     _consultar();
   }
 }

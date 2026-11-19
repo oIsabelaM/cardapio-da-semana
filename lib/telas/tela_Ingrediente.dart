@@ -57,10 +57,9 @@ class _TelaIngredienteState extends State<TelaIngrediente> {
             SizedBox(height: 12),
             Buttons(_ouvindo ? "Ouvindo... toque para parar" : "Falar ingrediente",
                 onPressed: _ouvir),
-            if (_textoFalado != "") SizedBox(height: 10),
-            if (_textoFalado != "")
-              TextosCustom("Entendido: \"$_textoFalado\"", 15, Cores.secundaria,
-                  centralizado: true),
+            SizedBox(height: 10),
+            TextosCustom(_textoFalado == "" ? "" : "Entendido: \"$_textoFalado\"", 15,
+                Cores.secundaria, centralizado: true),
           ],
         )),
         Cartao(Column(
